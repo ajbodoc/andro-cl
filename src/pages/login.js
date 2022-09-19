@@ -1,55 +1,49 @@
 import React from "react";
 import styled from 'styled-components';
+import { useMutation, gql } from '@apollo/client';
 
 const StyledConteiner = styled.div`
 display: flex;
 justify-content: space-between;
 align-items: center;
 font-size: 1rem;
+`;
 
+const USER_LOGIN = gql`
+mutation usersLoginMut($email: String!, $password: String!) {
+    usersLogin(input: {email: $email, passw: $password}) {
+      jwtToken {
+        role
+        usersId
+        expira
+        clienteId
+        divisionId
+      }
+    }
+  }
 `;
 
 
 function Login() {
-    const [values, setValues] = React.useState({
-        email: "",
-        password: "",
-    });
-
-    function handleSubmit(evt) {
-        /*
-          Previene el comportamiento default de los
-          formularios el cual recarga el sitio
-        */
-        evt.preventDefault();
-        console.log("LOGIN: ", values);
-        // Aquí puedes usar values para enviar la información
+    const [email, setEmail] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [login, { data, loading, error }] = useMutation(USER_LOGIN,{
+        onCompleted: (data) => console.log("Data from mutation", data),
+        onError: (error) => console.error("Error creating a post", error)
     }
+   );
 
-    function handleChange(evt) {
-        /*
-          evt.target es el elemento que ejecuto el evento
-          name identifica el input y value describe el valor actual
-        */
-        const { target } = evt;
-        const { name, value } = target;
-        /*
-          Este snippet:
-          1. Clona el estado actual
-          2. Reemplaza solo el valor del
-             input que ejecutó el evento
-        */
-        const newValues = {
-            ...values,
-            [name]: value,
-        };
-        // Sincroniza el estado de nuevo
-        setValues(newValues);
-    }
+
+   function handleLogin(event) {
+    event.preventDefault();
+    // the mutate function also doesn't return a promise
+    console.log('imput',{ email, password } );
+    login({ variables: { email, password } });
+  }
 
     return (
-        <StyledConteiner>
-            <form onSubmit={handleSubmit}>
+        <StyledConteiner >
+            <form onSubmit={handleLogin}>
                 <br>
                 </br>
                 <div>
@@ -58,8 +52,8 @@ function Login() {
                         id="email"
                         name="email"
                         type="email"
-                        value={values.email}
-                        onChange={handleChange}
+                        value={data?.email}
+                        onChange={(event) => setEmail(event.target.value)} 
                     />
                 </div>
 
@@ -71,14 +65,15 @@ function Login() {
                         id="password"
                         name="password"
                         type="password"
-                        value={values.password}
-                        onChange={handleChange}
+                        value={data?.password}
+                        onChange={(event) => setPassword(event.target.value)} 
                     />
                 </div>
 
                 <br>
                 </br>
-                <button type="submit">Sign Up</button>
+                <button  disabled={loading} type="submit">Sign Up</button>
+                {error && <p>{error.message}</p>}
             </form>
         </StyledConteiner>
     );

@@ -23,16 +23,18 @@ mutation usersLoginMut($email: String!, $password: String!) {
   }
 `;
 
-
 function Login() {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [login, { data, loading, error }] = useMutation(USER_LOGIN,{
-        onCompleted: (data) => console.log("Data from mutation", data),
+        onCompleted: (data) => {console.log("Data from Login", JSON.stringify(data))
+                    let jwtoken = JSON.stringify(data);
+                    localStorage.setItem('jwtoken', JSON.stringify(data));
+                    console.log('login jwtoken',jwtoken);
+                    },
         onError: (error) => console.error("Error creating a post", error)
     }
    );
-
 
    function handleLogin(event) {
     event.preventDefault();
